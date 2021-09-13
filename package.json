@@ -1,0 +1,15 @@
+{
+  "name": "sit314_task8",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "p791524",
+  "license": "ISC",
+  "dependencies": {
+    "mqtt": "^4.0.1"
+  }
+}
