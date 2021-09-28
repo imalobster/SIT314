@@ -18,5 +18,5 @@ client.on('connect', () =>
 // Code to fire for 'message' event
 client.on('message', (topic, message) =>
 {
-	console.log("Topic: " + topic + " | Message: " + message);
+	console.log("Topic: " + parts + " | Message: " + message);
 });

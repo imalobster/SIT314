@@ -1,0 +1,14 @@
+{
+  "name": "smartlight-floor",
+  "version": "1.0.0",
+  "description": "Fog node for SmartLight",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "211333197",
+  "license": "ISC",
+  "dependencies": {
+    "mqtt": "^4.0.1"
+  }
+}
