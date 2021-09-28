@@ -1,0 +1,129 @@
+{
+	"floors":
+	[
+		{
+			"floorId": 0,
+			"rooms":
+			[
+				{
+					"roomId": 0,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "lux"
+						}
+					]
+				},
+				{
+					"roomId": 1,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "lux"
+						}
+					]
+				}
+			]
+		},
+		{
+			"floorId": 1,
+			"rooms":
+			[
+				{
+					"roomId": 0,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "lux"
+						}
+					]
+				},
+				{
+					"roomId": 1,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "lux"
+						}
+					]
+				}
+			]
+		}
+	]
+}

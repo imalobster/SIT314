@@ -15,7 +15,7 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data from rooms
-var receiveRoomTopic = `smartlight_data/floors/${floorId}/rooms/#`
+var receiveRoomTopic = `smartlight_data/floors/${floorId}/sensors`
 
 // Define MQTT topic string for sending data to room
 var sendRoomTopic = `smartlight_data/floors/${floorId}/rooms/`
@@ -101,8 +101,11 @@ function HandleSensorMessage(topicChain, msg)
 // ############################################################
 function PublishToRoom(roomId, msg)
 {
+	// Construct topic string
+	subTopic = sendRoomTopic + `room_${roomId}/lights`
+
 	// Forward message from processing server to the room node
-	client.publish(sendRoomTopic + "_" + roomId, msg);
+	client.publish(subTopic, msg);
 }
 
 function PublishToProcessing(subTopic, msg)
