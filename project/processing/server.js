@@ -1,14 +1,15 @@
-// Pull the mqtt module
+// Pull the mqtt and mongoose modules
 const mqtt = require('mqtt')
+const mongoose = require('mongoose');
 
 // Establish connection variable for the broker
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data
-var receiveTopic = "smartlight_data/#"
+var receiveTopic = "smartlight/processing"
 
 // Define MQTT topic string for outbound commands to lights
-var outboundTopic = "smartlight_data/floors/"
+var outboundTopic = "smartlight/floors/"
 
 // Code to fire for 'connect' event
 client.on('connect', () =>
