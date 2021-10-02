@@ -45,7 +45,7 @@ client.on('message', (topic, payload) =>
 	if (msg.type == 'request')
 	{
 		// Print received message
-		console.log("Received message from processing server, forwarding to apartment_" + msg.apartmentId);
+		console.log("Received request message from processing server, forwarding to apartment_" + msg.apartmentId);
 
 		// Call handler function
 		HandleRequestMessage(msg);

@@ -1,8 +1,16 @@
 # Pull in JSON config file
-Get-Con
+$config = Get-Content -Raw -Path "..\_testing\room_config.json" | ConvertFrom-Json
 
-$test='{"type":"web","floorId":0,"apartmentId":0,"lightId":0,"time":"1999-01-01","direction":"on"}'
-$test = $test.Replace('"','\"')
-$topic = "smartlight/web/webapp"
-
-mqtt publish -h broker.hivemq.com -p1883 -t $topic -m $test
+# Loop through each floor and create new apartment nodes silently using pm2
+foreach ($floor in $config.floors)
+{
+	Write-Output("floor: " + $floor.floorId)
+	foreach ($apartment in $floor.apartments)
+	{
+		$serverNo = ("floor_$($floor.floorId)_apartment_$($apartment.apartmentId)")
+		Write-Output("generating " + $apartmentNo + " node")
+		$apartmentString = $apartment | ConvertTo-Json
+		$apartmentString = $apartmentString.Replace('"','\"')
+		cmd.exe /c "pm2 start ..\apartment\server.js --name $serverNo -- "  $floor.floorId $apartment.apartmentId
+	}
+}

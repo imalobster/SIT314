@@ -63,9 +63,6 @@ client.on('message', (topic, payload) =>
 // ############################################################
 function HandleSensorMessage(msg)
 {
-	console.log("sensor lux: " + msg.lux);
-	console.log("sensor motion: " + msg.motion);
-
 	// Store sensor data in Mongoose DB
 	StoreSensorData(msg);
 
@@ -142,8 +139,6 @@ function ActivateLight(msg, lightDirection)
 // ############################################################
 function HandleSwitchMessage(msg)
 {
-	console.log("switch direction: " + msg.direction);
-
 	// Store request data in Mongoose DB
 	StoreRequestData(msg, "switch_req");
 

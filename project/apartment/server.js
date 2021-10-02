@@ -1,18 +1,25 @@
 // ############################################################
 // # apartment NODE
 // ############################################################
-// Create new apartment node using JSON string passed as argument
-var args = process.argv.slice(2);
+// Create new apartment node using JSON string passed as argument - couldnt script this with pm2 :(
+//var args = process.argv.slice(2);
+//var apartmentConfig = JSON.parse(args[0]);
+//var floorId = "floor_" + args[1];
 
-// apartment configuration is passed once server is instantiated, kept as JSON object
-var apartmentConfig = JSON.parse(args[0]);
-var floorId = "floor_" + args[1];
+// Instead, pull from local testing file and use passed in apartment and floor ID
+var args = process.argv.slice(2);
+var floorId = "floor_" + args[0];
+var config = require('../_testing/room_config.json');
+apartmentConfig = config.floors[args[0]].apartments[args[1]];
 
 // Define apartment from ID in config object
 var apartmentId = "apartment_" + apartmentConfig.apartmentId;
 
 // Pull the mqtt module
 const mqtt = require('mqtt')
+
+// Pull the FS module for writing light status to file
+const fs = require('fs');
 
 // Establish connection variable for the broker
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
@@ -73,6 +80,7 @@ client.on('message', (topic, payload) =>
 	}
 });
 
+
 // Script will loop through and instantiate multiple apartment instances running local. Details will be pulled from JSON file
 // Floor servers remain in cloud
 
@@ -88,17 +96,11 @@ function HandleRequestMessage(msg)
 	if (currentStatus != msg.direction)
 	{
 		SetLightStatus(msg.lightId, msg.direction);
+		WriteLightStatus(apartmentConfig.lights);
 	}
 	else
 	{
 		console.log(`direction already ${msg.direction} - not changing`);
-	}
-
-	// Print all lights status
-	for (var i = 0; i < apartmentConfig.lights.length; i++)
-	{
-		light = apartmentConfig.lights[i];
-		console.log("Light " + light.lightId + " status: " + light.lightStatus);
 	}
 }
 
@@ -127,6 +129,27 @@ function SetLightStatus(lightId, direction)
 			apartmentConfig.lights[i].lightStatus = direction;
 		}
 	}
+}
+
+function WriteLightStatus(lights)
+{
+	var data = {};
+	data["floor"] = floorId;
+	data["apartment"] = apartmentId;
+	for (var i = 0; i < lights.length; i++)
+	{
+		data[("light_" + lights[i].lightId)] = lights[i].lightStatus;
+	}
+	var fileName = `../_testing/data/${floorId}_${apartmentId}_data.json`
+	data = JSON.stringify(data);
+	fs.writeFile(fileName, data, (err) =>
+	{
+		if (err)
+		{
+			throw err;
+		}
+		console.log("light status data save to file");
+	})
 }
 
 
