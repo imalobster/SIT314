@@ -18,10 +18,10 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data from sensors and floor
-var inboundTopic = `smartlight/floors/${floorId}/rooms/${roomId}/#`
+var inboundTopic = `smartlight/floors/${floorId}/rooms/${roomId}/#`;
 
 // Define MQTT topic string for sending data to floor
-var outboundTopic = `smartlight/floors/${floorId}`
+var outboundTopic = `smartlight/floors/${floorId}`;
 
 
 // ############################################################
@@ -44,11 +44,8 @@ client.on('message', (topic, payload) =>
 	// Extract payload from JSON format
 	var msg = JSON.parse(payload);
 
-	// Get topic chain
-	var topicChain = topic.split('/');
-
 	// Check if message came from a physical switch
-	if (topicChain.at(-1) == 'switches')
+	if (msg.type: == 'switches')
 	{
 		// Print received message
 		console.log("Received message from physical switch server, forwarding to floor server");
