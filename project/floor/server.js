@@ -13,17 +13,15 @@ const mqtt = require('mqtt')
 // Establish connection variable for the broker
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
-// Define MQTT topic for receiving data from rooms
-var receiveRoomTopic = `smartlight/floors/${floorId}/sensors`
+// Define MQTT topics for receiving data from senors and switches, as well as requests
+var inboundTopic = `smartlight/floors/${floorId}/rooms`;
 
-// Define MQTT topic string for sending data to room
-var sendRoomTopic = `smartlight/floors/${floorId}/rooms/`
+// Define MQTT topic string for sending data to rooms
+var outboundTopicRoom = `smartlight/floors/${floorId}/rooms/room_`;
 
-// Define MQTT topic for receiving data from processing server(s)
-var receiveProcessingTopic = `smartlight/floors/${floorId}`
+// Define MQTT topic string for sending data to processing server
+var outboundTopicProcessing = `smartlight/floors/`;
 
-// Define MQTT topic string for sending data to room
-var sendProcessingTopic = `smartlight/processing/switch`
 
 // ############################################################
 // # Event handlers
@@ -31,11 +29,10 @@ var sendProcessingTopic = `smartlight/processing/switch`
 // Code to fire for 'connect' event
 client.on('connect', () =>
 {
-	// Subscribe to the all topics
-	client.subscribe(receiveRoomTopic);
-	client.subscribe(receiveProcessingTopic);
+	// Subscribe to the inbound topic
+	client.subscribe(inboundTopic);
 
-	console.log('mqtt connected');
+	console.log(`${floorId} connected to MQTT broker`);
 });
 
 // Code to fire for 'message' event
@@ -44,26 +41,34 @@ client.on('message', (topic, payload) =>
 	// Extract payload from JSON format
 	var msg = JSON.parse(payload);
 
-	// Get topic chain
-	var topicChain = topic.split('/');
+	console.log(msg.type);
 
 	// Check if message came from the processing server
-	if (topic == receiveProcessingTopic)
+	if (msg.type == 'request')
 	{
 		// Print received message
 		console.log("Received message from processing server, redirecting to: " + msg.roomId);
 
 		// Call handler function
-		HandleProcessingMessage(msg);
+		HandleRequestMessage(msg);
 	}
-	// Otherwise, it came from a sensor
-	else
+	// ...or sensor
+	else if (msg.type == 'sensor')
 	{
 		// Print received message
-		console.log("Received message from room node, forwarding to processing server")
+		console.log("Received sensor message from room node, forwarding to processing server")
 		
 		// Call handler function
-		HandleSensorMessage(topicChain, msg);
+		HandleSensorMessage(msg);
+	}
+	// ...or switch
+	else if (msg.type == 'switch')
+	{
+		// Print received message
+		console.log("Received switch message from room node, forwarding to processing server")
+		
+		// Call handler function
+		HandleSwitchMessage(msg);
 	}
 });
 
@@ -73,42 +78,40 @@ client.on('message', (topic, payload) =>
 // ############################################################
 // # Processing message outbound handler
 // ############################################################
-function HandleProcessingMessage(msg)
+function HandleRequestMessage(msg)
 {
-	// Get roomId to forward to room node
-	var roomId = msg.roomId;
-
 	// Forward message on to room node
-	PublishToRoom(roomId, msg)
+	PublishToTopic(outboundTopicRoom + msg.payload.roomId + "/requests", msg)
 }
 
 
 // ############################################################
-// # Room message outbound handler
+// # Sensor message outbound handler
 // ############################################################
-function HandleSensorMessage(topicChain, msg)
+function HandleSensorMessage(msg)
 {
-	// Set subTopic string
-	var subTopic = "sensor";
-
-	// Forward message on to room node
-	PublishToProcessing(subTopic, msg)
+	// Forward message on to processing server
+	PublishToTopic(outboundTopicProcessing, msg)
 }
+
+
+// ############################################################
+// # Switch message outbound handler
+// ############################################################
+function HandleSensorMessage(msg)
+{
+	// Forward message on to processing server
+	PublishToTopic(outboundTopicProcessing, msg)
+}
+
 
 // ############################################################
 // # Generic functions
 // ############################################################
-function PublishToRoom(roomId, msg)
+function PublishToTopic(topic, msg)
 {
-	// Construct topic string
-	subTopic = sendRoomTopic + `room_${roomId}/lights`
+	console.log("publishing message to " + topic);
 
-	// Forward message from processing server to the room node
-	client.publish(subTopic, msg);
-}
-
-function PublishToProcessing(subTopic, msg)
-{
 	// Publish message to the processing server
-	client.publish(sendProcessingTopic + "/" + subTopic, msg);
+	client.publish(topic, msg);
 }
