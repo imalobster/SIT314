@@ -138,7 +138,7 @@ function HandleSensorMessage(msg)
 	var now = new Date();
 
 	// Attach additional contextual variable to JSON object to forward on to floor
-	msg["lightStatus"] = apartmentConfig.lights[msg.lightId].lightStatus;
+	msg["lightStatus"] = apartmentConfig.lights[msg.sensorId].lightStatus;
 	msg["time"] = now;
 
 	// Forward message on to apartment node

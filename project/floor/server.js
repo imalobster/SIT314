@@ -54,7 +54,7 @@ client.on('message', (topic, payload) =>
 	else if (msg.type == 'sensor')
 	{
 		// Print received message
-		console.log("Received sensor message from apartment node, forwarding to processing server")
+		console.log("Received sensor message from apartment node, forwarding to processing server");
 		
 		// Call handler function
 		HandleSensorMessage(msg);
@@ -63,7 +63,7 @@ client.on('message', (topic, payload) =>
 	else if (msg.type == 'switch')
 	{
 		// Print received message
-		console.log("Received switch message from apartment node, forwarding to processing server")
+		console.log("Received switch message from apartment node, forwarding to processing server");
 		
 		// Call handler function
 		HandleSwitchMessage(msg);

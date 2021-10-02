@@ -15,7 +15,7 @@ var inboundTopicFloors = "smartlight/processing/floors"
 var inboundTopicWeb = "smartlight/processing/webapp"
 
 // Define MQTT topic string for outbound commands to lights
-var outboundTopic = "smartlight/floors/"
+var outboundTopic = "smartlight/floors/floor_"
 
 // Code to fire for 'connect' event
 client.on('connect', () =>
@@ -66,37 +66,71 @@ function HandleSensorMessage(msg)
 	// Store sensor data in Mongoose DB
 	StoreSensorData(msg);
 
-	// Check if lights in apartment should be switched on/off based on reading
-	var switchLight = CheckLuminosityReading(MessagePort);
+	// Check if lights in apartment should be switched on/off based on sensor
+	var switchLight = CheckSensorReading(msg);
 
 	// Send message to floor if light needs to be switched
 	if (switchLight)
 	{
-		ActivateAllLights(msg.apartmentId);
+		// Get direction (will be opposite whatever it is currently)
+		var lightDirection;
+		if (msg.lightStatus == "on")
+		{
+			lightStatus == "off";
+		}
+		else if (msg.lightStatus == "off")
+		{
+			lightStatus == "on";
+		}
+		ActivateLight(msg, lightDirection);
 	}
 	// Else do nothing
 }
 
-function CheckLuminosityReading(msg)
+function CheckSensorReading(msg)
 {
 	// If light is on or off
 	if (msg.lightStatus == "off")
-	// Check the lux level (less than 200 needs light)
+	{
+		// Check the lux level (less than 200 needs light)
 		if (msg.luxLow <= 200)
 		{
-			// And if motion detected coming in
+			// If motion detected coming in, return true
 			if (msg.motion == 'in')
 			{
 				return true;
 			}
 		}
-	var luxLow = msg.lux <= 200;
-	// Check the direction of motion (turn on if in, turn off if out)
-	var motionIn = msg.motion == ;
-
-	{
-
 	}
+	else if (msg.lightStatus == "on")
+	{
+		// If motion detected coming out, return true
+		if (msg.motion == 'out')
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+function ActivateLight(msg, lightDirection)
+{
+	// Get time of request
+	var now = new Date();
+
+	// Generate new request message
+	newMsg = {
+			type: "request",
+			floorId: msg.floorId,
+			apartmentId: msg.apartmentId,
+			lightId: lightId,
+			time: now,
+			direction: lightDirection 
+		};
+
+	StoreRequestData(newMsg, "sensor_req");
+
+	PublishToTopic(outboundTopic + msg.floorId + "/rooms", newMsg);
 }
 
 
@@ -106,71 +140,34 @@ function CheckLuminosityReading(msg)
 function HandleSwitchMessage(msg)
 {
 	// Store request data in Mongoose DB
-	StoreRequestData(msg);
-
-	// Determine which direction to switch light
-	var lightDirection;
-	if (msg.lightStatus == 'on')
-	{
-		lightDirection = 'off';
-	}
-	else
-	{
-		lightDirection = 'on';
-	}
+	StoreRequestData(msg, "switch_req");
 
 	// Send message to floor node to activate light in apartment
-	ActivateLight(msg.apartmentId, msg.lightId, lightDirection);
+	PublishToTopic(outboundTopic + msg.floorId + "/rooms", msg);
 }
 
 
 // ############################################################
 // # Web message handler (essentially same as above)
 // ############################################################
-function HandleWebMessage(topicChain, msg)
+function HandleWebMessage(msg)
 {
 	// Store request data in Mongoose DB
-	StoreRequestData(topicChain, msg);
-
-	// Determine which direction to switch light
-	var lightDirection;
-	if (msg.lightStatus == 'on')
-	{
-		lightDirection = 'off';
-	}
-	else
-	{
-		lightDirection = 'on';
-	}
+	StoreRequestData(msg, "webapp_req");
 
 	// Send message to floor node to activate light in apartment
-	ActivateLight(msg.apartmentId, msg.lightId, lightDirection);
+	PublishToTopic(outboundTopic + msg.floorId + "/rooms", msg);
 }
 
 
 // ############################################################
 // # Generic functions
 // ############################################################
-function ActivateLight(apartmentId, lightId, lightDirection)
-{
-	// Send message to turn switch lights on/of in specified apartment
-	msg = JSON.stringify({ request: "switch_light", apartment: apartmentId, light: lightId, direction: lightDirection });
-	PublishToFloor(msg);
-}
 
-function ActivateAllLights(apartmentId)
+function PublishToTopic(outboundTopic, msg)
 {
-	// Send message to turn switch lights on/of in specified apartment
-	msg = JSON.stringify({ request: "switch_all", apartment: apartmentId });
-	PublishToFloor(msg);
-}
-
-function PublishToFloor(floorId, msg)
-{
-	console.log("hi");
-
 	// Publish message to the floor for fog level processing
-	client.publish(outboundTopic + "floor_" + floorId, JSON.stringify(msg));
+	client.publish(outboundTopic, JSON.stringify(msg));
 }
 
 function StoreSensorData(msg)
@@ -194,10 +191,11 @@ function StoreSensorData(msg)
 		})
 }
 
-function StoreRequestData(msg)
+function StoreRequestData(msg, type)
 {
 	request = new Request(
 		{
+			type: type,
 			floorId: msg.floorId,
 			apartmentId: msg.apartmentId,
 			lightId: msg.lightId,
