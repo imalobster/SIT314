@@ -14,10 +14,10 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topics for receiving data from senors and switches, as well as requests
-var inboundTopic = `smartlight/floors/${floorId}/rooms`;
+var inboundTopic = `smartlight/floors/${floorId}/apartments`;
 
-// Define MQTT topic string for sending data to rooms
-var outboundTopicRoom = `smartlight/floors/${floorId}/rooms/room_`;
+// Define MQTT topic string for sending data to apartments
+var outboundTopicapartment = `smartlight/floors/${floorId}/apartments/apartment_`;
 
 // Define MQTT topic string for sending data to processing server
 var outboundTopicProcessing = `smartlight/floors/`;
@@ -41,13 +41,11 @@ client.on('message', (topic, payload) =>
 	// Extract payload from JSON format
 	var msg = JSON.parse(payload);
 
-	console.log(msg.type);
-
 	// Check if message came from the processing server
 	if (msg.type == 'request')
 	{
 		// Print received message
-		console.log("Received message from processing server, redirecting to: " + msg.roomId);
+		console.log("Received message from processing server, redirecting to: " + msg.apartmentId);
 
 		// Call handler function
 		HandleRequestMessage(msg);
@@ -56,7 +54,7 @@ client.on('message', (topic, payload) =>
 	else if (msg.type == 'sensor')
 	{
 		// Print received message
-		console.log("Received sensor message from room node, forwarding to processing server")
+		console.log("Received sensor message from apartment node, forwarding to processing server")
 		
 		// Call handler function
 		HandleSensorMessage(msg);
@@ -65,14 +63,14 @@ client.on('message', (topic, payload) =>
 	else if (msg.type == 'switch')
 	{
 		// Print received message
-		console.log("Received switch message from room node, forwarding to processing server")
+		console.log("Received switch message from apartment node, forwarding to processing server")
 		
 		// Call handler function
 		HandleSwitchMessage(msg);
 	}
 });
 
-// Script will loop through and instantiate multiple room instances running local. Details will be pulled from JSON file
+// Script will loop through and instantiate multiple apartment instances running local. Details will be pulled from JSON file
 // Floor servers remain in cloud
 
 // ############################################################
@@ -80,8 +78,8 @@ client.on('message', (topic, payload) =>
 // ############################################################
 function HandleRequestMessage(msg)
 {
-	// Forward message on to room node
-	PublishToTopic(outboundTopicRoom + msg.payload.roomId + "/requests", msg)
+	// Forward message on to apartment node
+	PublishToTopic(outboundTopicapartment + msg.apartmentId, msg)
 }
 
 
@@ -90,6 +88,8 @@ function HandleRequestMessage(msg)
 // ############################################################
 function HandleSensorMessage(msg)
 {
+	console.log("lux value: " + msg.lux);
+
 	// Forward message on to processing server
 	PublishToTopic(outboundTopicProcessing, msg)
 }
@@ -98,8 +98,10 @@ function HandleSensorMessage(msg)
 // ############################################################
 // # Switch message outbound handler
 // ############################################################
-function HandleSensorMessage(msg)
+function HandleSwitchMessage(msg)
 {
+	console.log("switch direction: " + msg.direction);
+
 	// Forward message on to processing server
 	PublishToTopic(outboundTopicProcessing, msg)
 }
@@ -108,10 +110,10 @@ function HandleSensorMessage(msg)
 // ############################################################
 // # Generic functions
 // ############################################################
-function PublishToTopic(topic, msg)
+function PublishToTopic(outboundTopic, msg)
 {
-	console.log("publishing message to " + topic);
+	console.log("publishing message to " + outboundTopic);
 
 	// Publish message to the processing server
-	client.publish(topic, msg);
+	client.publish(outboundTopic, JSON.stringify(msg));
 }

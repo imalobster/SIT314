@@ -61,7 +61,7 @@ function Loop()
 // ############################################################
 function SimulateNewRequest()
 {
-	// Generate random values for floor, room, and light (capped at 3 for testing purposes)
+	// Generate random values for floor, apartment, and light (capped at 3 for testing purposes)
 	
 
 	// Determine which direction to switch light
@@ -75,16 +75,16 @@ function SimulateNewRequest()
 		lightDirection = 'on';
 	}
 
-	// Send message to floor node to activate light in room
-	ActivateLight(msg.roomId, msg.lightId, lightDirection);
+	// Send message to floor node to activate light in apartment
+	ActivateLight(msg.apartmentId, msg.lightId, lightDirection);
 }
 
 
 // ############################################################
 // # Generic functions
 // ############################################################
-function PublishToProcessing(msg)
+function PublishToProcessing(outboundTopic, msg)
 {
 	// Publish message to the floor for fog level processing
-	client.publish(outboundTopic, msg);
+	client.publish(outboundTopic, JSON.stringify(msg));
 }
