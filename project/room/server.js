@@ -18,13 +18,10 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data from sensors and floor
-var receiveMessagesTopic = `smartlight_data/floors/${floorId}/rooms/${roomId}/#`
+var inboundTopic = `smartlight/floors/${floorId}/rooms/${roomId}/#`
 
 // Define MQTT topic string for sending data to floor
-var sendFloorTopicString = `smartlight_data/floors/${floorId}`
-
-// Define MQTT topic string for sending data to lights
-var sendRoomTopicString = `smartlight_data/floors/${floorId}/rooms/${roomId}/lights/`
+var outboundTopic = `smartlight/floors/${floorId}`
 
 
 // ############################################################
@@ -33,12 +30,13 @@ var sendRoomTopicString = `smartlight_data/floors/${floorId}/rooms/${roomId}/lig
 // Code to fire for 'connect' event
 client.on('connect', () =>
 {
-	// Subscribe to the all topics
-	client.subscribe(receiveMessagesTopic);
+	// Subscribe to the inbound topic
+	client.subscribe(inboundTopic);
 	
 	// Print connect message
 	console.log(`${roomId} connected to MQTT broker`);
 });
+
 
 // Code to fire for 'message' event
 client.on('message', (topic, payload) =>
@@ -49,17 +47,17 @@ client.on('message', (topic, payload) =>
 	// Get topic chain
 	var topicChain = topic.split('/');
 
-	// Check if message came from the floor server to switch light
-	if (topicChain.at(-1) == 'lights')
+	// Check if message came from a physical switch
+	if (topicChain.at(-1) == 'switches')
 	{
 		// Print received message
-		console.log("Received message from floor server, switch light: " + msg.lightId);
+		console.log("Received message from physical switch server, forwarding to floor server");
 
 		// Call handler function
-		HandleFloorMessage(msg);
+		HandleSwitchMessage(msg);
 	}
-	// Otherwise, it came from a sensor
-	else if (topicChain.at(-1) == 'sensor')
+	// ..or a sensor
+	else if (topicChain.at(-1) == 'sensors')
 	{
 		// Print received message
 		console.log("Received message from sensor, forwarding to floor server")
@@ -67,20 +65,27 @@ client.on('message', (topic, payload) =>
 		// Call handler function
 		HandleSensorMessage(msg);
 	}
+	// ..or a request from processing
+	else if (topicChain.at(-1) == 'requests')
+	{
+		// Print received message
+		console.log("Received new request from floor server, switching light direction")
+		
+		// Call handler function
+		HandleRequestMessage(msg);
+	}
 });
 
 // Script will loop through and instantiate multiple room instances running local. Details will be pulled from JSON file
 // Floor servers remain in cloud
 
 // ############################################################
-// # Floor message outbound handler
+// # Request message inbound handler
 // ############################################################
-function HandleFloorMessage(msg)
+function HandleRequestMessage(msg)
 {
 	// Get lightId from payload
 	var lightId = msg.lightId;
-
-	// NEED TO CHECK FOR ALL LIGHTS MESSAGES
 
 	// Get current light direction
 	var currentStatus = GetLightStatus(lightId);
@@ -90,6 +95,13 @@ function HandleFloorMessage(msg)
 	{
 		SetLightStatus(lightId, msg.direction);
 	}
+
+	// Print all lights status
+	for (var i = 0; i < roomConfig.lights.length; i++)
+	{
+		light = roomConfig.lights[i];
+		console.log("Light " + light.lightId + " status: " + light.lightStatus);
+	}
 }
 
 function GetLightStatus(lightId)
@@ -98,9 +110,10 @@ function GetLightStatus(lightId)
 	var lightStatus;
 	for (var i = 0; i < roomConfig.lights.length; i++)
 	{
-		if (roomConfig.lights[i] == lightId)
+		if (roomConfig.lights[i].lightId == lightId)
 		{
-			lightStatus = light.lightStatus;
+			lightStatus = roomConfig.lights[i].lightStatus;
+			break;
 		}
 	}
 	return lightStatus;
@@ -111,32 +124,52 @@ function SetLightStatus(lightId, direction)
 	// Loop through lights in room config
 	for (var i = 0; i < roomConfig.lights.length; i++)
 	{
-		if (roomConfig.lights[i] == lightId)
+		if (roomConfig.lights[i].lightId == lightId)
 		{
 			roomConfig.lights[i].lightStatus = direction;
 		}
 	}
 }
 
+
 // ############################################################
-// # Sensor message inbound handler
+// # Sensor message outbound handler
 // ############################################################
 function HandleSensorMessage(msg)
 {
-	// Attach additional contextual variables to JSON object to forward on to floor
-	msg["floorId"] = floorId;
-	msg["roomId"] = roomId;
+	// Get time of reading
+	var now = new Date();
+
+	// Attach additional contextual variable to JSON object to forward on to floor
 	msg["roomStatus"] = roomConfig.lights;
+	msg["time"] = now;
 
 	// Forward message on to room node
-	PublishToFloor(sendFloorTopicString, msg)
+	PublishToFloor(outboundTopic + "/sensors", msg)
 }
+
+
+// ############################################################
+// # Switch message outbound handler
+// ############################################################
+function HandleSwitchMessage(msg)
+{
+	// Get time of request
+	var now = new Date();
+
+	// Attach additional contextual variable to JSON object to forward on to floor
+	msg["time"] = now;
+
+	// Forward message on to room node
+	PublishToFloor(outboundTopic + "/requests", msg)
+}
+
 
 // ############################################################
 // # Generic functions
 // ############################################################
-function PublishToFloor(roomId, msg)
+function PublishToFloor(outboundTopic, msg)
 {
 	// Forward message from processing server to the room node
-	client.publish(sendFloorTopicString + "" + roomId, msg);
+	client.publish(outboundTopic, msg);
 }

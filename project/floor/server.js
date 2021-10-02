@@ -1,7 +1,6 @@
 // ############################################################
 // # FLOOR SERVER
 // ############################################################
-
 // Create new floor server using floor identifier passed as argument
 var args = process.argv.slice(2);
 
@@ -15,16 +14,16 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data from rooms
-var receiveRoomTopic = `smartlight_data/floors/${floorId}/sensors`
+var receiveRoomTopic = `smartlight/floors/${floorId}/sensors`
 
 // Define MQTT topic string for sending data to room
-var sendRoomTopic = `smartlight_data/floors/${floorId}/rooms/`
+var sendRoomTopic = `smartlight/floors/${floorId}/rooms/`
 
 // Define MQTT topic for receiving data from processing server(s)
-var receiveProcessingTopic = `smartlight_data/floors/${floorId}`
+var receiveProcessingTopic = `smartlight/floors/${floorId}`
 
 // Define MQTT topic string for sending data to room
-var sendProcessingTopic = `smartlight_data/floors/${floorId}`
+var sendProcessingTopic = `smartlight/processing/switch`
 
 // ############################################################
 // # Event handlers

@@ -1,12 +1,18 @@
 // Pull the mqtt and mongoose modules
-const mqtt = require('mqtt')
+const mqtt = require('mqtt');
 const mongoose = require('mongoose');
+const Sensor = require('./models/sensor');
+const Request = require('./models/request');
+const sensor = require('./models/sensor');
 
-// Establish connection variable for the broker
+// Establish connection to mongoose
+mongoose.connect('mongodb+srv://bastone:bigpassword%211@smartlightdb.ak3dv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
+
+// Establish connection with the broker
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic for receiving data
-var receiveTopic = "smartlight/processing"
+var receiveTopic = "smartlight/processing/#"
 
 // Define MQTT topic string for outbound commands to lights
 var outboundTopic = "smartlight/floors/"
@@ -34,17 +40,17 @@ client.on('message', (topic, payload) =>
 	// Check if origin of message was from a sensor
 	if (topicChain.at(-1) == 'sensor')
 	{
-		HandleSensorMessage(topicChain, msg);
+		HandleSensorMessage(msg);
 	}
 	// Check if origin of message was from a physical switch
 	else if (topicChain.at(-1) == 'switch')
 	{
-		HandleSwitchMessage(topicChain, msg);
+		HandleSwitchMessage(msg);
 	}
 	// Check if message came from web application
-	else if (topicChain.at(1) == 'webapp')
+	else if (topicChain.at(-1) == 'web')
 	{
-		HandleWebMessage(topicChain, msg);
+		HandleWebMessage(msg);
 	}
 });
 
@@ -52,19 +58,18 @@ client.on('message', (topic, payload) =>
 // ############################################################
 // # Sensor message handler
 // ############################################################
-function HandleSensorMessage(topicChain, msg)
+function HandleSensorMessage(msg)
 {
 	// Store sensor data in Mongoose DB
-	StoreSensorData(topicChain, msg);
+	StoreSensorData(msg);
 
 	// Check if lights in room should be switched on/off based on reading
-	var roomId = topicChain.at(-2)
 	var switchLight = CheckLuminosityReading(msg.roomId, msg.val, msg.time, msg.roomStatus);
 
 	// Send message to floor if light needs to be switched
 	if (switchLight)
 	{
-		ActivateAllLights(roomId);
+		ActivateAllLights(msg.roomId);
 	}
 	// Else do nothing
 }
@@ -73,10 +78,10 @@ function HandleSensorMessage(topicChain, msg)
 // ############################################################
 // # Switch message handler
 // ############################################################
-function HandleSwitchMessage(topicChain, msg)
+function HandleSwitchMessage(msg)
 {
 	// Store request data in Mongoose DB
-	StoreSensorData(topicChain, msg);
+	StoreRequestData(msg);
 
 	// Determine which direction to switch light
 	var lightDirection;
@@ -100,7 +105,7 @@ function HandleSwitchMessage(topicChain, msg)
 function HandleWebMessage(topicChain, msg)
 {
 	// Store request data in Mongoose DB
-	StoreSensorData(topicChain, msg);
+	StoreRequestData(topicChain, msg);
 
 	// Determine which direction to switch light
 	var lightDirection;
@@ -137,11 +142,51 @@ function ActivateAllLights(roomId)
 
 function PublishToFloor(floorId, msg)
 {
+	console.log("hi");
+
 	// Publish message to the floor for fog level processing
 	client.publish(outboundTopic + "floor_" + floorId, msg);
 }
 
-function StoreSensorData(topicChain, msg)
+function StoreSensorData(msg)
 {
+	sensor = new Sensor(
+		{
+			floorId: msg.floorId,
+			roomId: msg.roomId,
+			sensorId: msg.sensorId,
+			time: msg.time,
+			lux: msg.value
+		}
+	)
+
+	sensor.save().then(doc => 
+		{
+			console.log(doc);
+		}).then(() =>
+		{
+			mongoose.connection.close()
+		})
+}
+
+function StoreRequestData(msg)
+{
+	request = new Request(
+		{
+			floorId: msg.floorId,
+			roomId: msg.roomId,
+			lightId: msg.lightId,
+			time: msg.time,
+			direction: msg.direction
+		}
+	)
+
+	request.save().then(doc => 
+		{
+			console.log(doc);
+		}).then(() =>
+		{
+			mongoose.connection.close()
+		})
 
 }

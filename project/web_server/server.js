@@ -8,7 +8,7 @@ const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 var outboundTopic = "smartlight/processing/webapp"
 
 // Define MQTT topic string for inbound commands to handle switches from user phones
-var inboundTopic = "smartlight_data/web"
+var inboundTopic = "smartlight/web"
 
 // Code to fire for 'connect' event
 client.on('connect', () =>
