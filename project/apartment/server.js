@@ -66,7 +66,7 @@ client.on('message', (topic, payload) =>
 	else if (msg.type == 'request')
 	{
 		// Print received message
-		console.log("Received new request from floor server, switching light direction")
+		console.log("Received new request from floor server, setting direction")
 		
 		// Call handler function
 		HandleRequestMessage(msg);
@@ -81,16 +81,17 @@ client.on('message', (topic, payload) =>
 // ############################################################
 function HandleRequestMessage(msg)
 {
-	// Get lightId from payload
-	var lightId = msg.lightId;
-
 	// Get current light direction
-	var currentStatus = GetLightStatus(lightId);
+	var currentStatus = GetLightStatus(msg.lightId);
 
 	// If different from payload status request, change it
 	if (currentStatus != msg.direction)
 	{
-		SetLightStatus(lightId, msg.direction);
+		SetLightStatus(msg.lightId, msg.direction);
+	}
+	else
+	{
+		console.log(`direction already ${msg.direction} - not changing`);
 	}
 
 	// Print all lights status
@@ -167,8 +168,6 @@ function HandleSwitchMessage(msg)
 // ############################################################
 function PublishToFloor(outboundTopic, msg)
 {
-	console.log("publishing message to " + outboundTopic);
-
 	// Forward message from processing server to the apartment node
 	client.publish(outboundTopic, JSON.stringify(msg));
 }

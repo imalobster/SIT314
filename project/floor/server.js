@@ -20,7 +20,7 @@ var inboundTopic = `smartlight/floors/${floorId}/apartments`;
 var outboundTopicapartment = `smartlight/floors/${floorId}/apartments/apartment_`;
 
 // Define MQTT topic string for sending data to processing server
-var outboundTopicProcessing = `smartlight/floors/`;
+var outboundTopicProcessing = `smartlight/floors`;
 
 
 // ############################################################
@@ -45,7 +45,7 @@ client.on('message', (topic, payload) =>
 	if (msg.type == 'request')
 	{
 		// Print received message
-		console.log("Received message from processing server, redirecting to: " + msg.apartmentId);
+		console.log("Received message from processing server, forwarding to apartment_" + msg.apartmentId);
 
 		// Call handler function
 		HandleRequestMessage(msg);
@@ -88,8 +88,6 @@ function HandleRequestMessage(msg)
 // ############################################################
 function HandleSensorMessage(msg)
 {
-	console.log("lux value: " + msg.lux);
-
 	// Forward message on to processing server
 	PublishToTopic(outboundTopicProcessing, msg)
 }
@@ -100,8 +98,6 @@ function HandleSensorMessage(msg)
 // ############################################################
 function HandleSwitchMessage(msg)
 {
-	console.log("switch direction: " + msg.direction);
-
 	// Forward message on to processing server
 	PublishToTopic(outboundTopicProcessing, msg)
 }
@@ -112,8 +108,6 @@ function HandleSwitchMessage(msg)
 // ############################################################
 function PublishToTopic(outboundTopic, msg)
 {
-	console.log("publishing message to " + outboundTopic);
-
 	// Publish message to the processing server
 	client.publish(outboundTopic, JSON.stringify(msg));
 }

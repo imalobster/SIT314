@@ -5,7 +5,7 @@ const mqtt = require('mqtt')
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topic string for outbound commands to lights
-var outboundTopic = "smartlight/processing/webapp"
+var outboundTopic = "smartlight/web/webapp"
 
 // Define MQTT topic string for inbound commands to handle switches from user phones
 var inboundTopic = "smartlight/web"

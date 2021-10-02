@@ -11,8 +11,8 @@ mongoose.connect('mongodb+srv://bastone:bigpassword%211@smartlightdb.ak3dv.mongo
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 // Define MQTT topics for receiving data from floors and web server
-var inboundTopicFloors = "smartlight/processing/floors"
-var inboundTopicWeb = "smartlight/processing/webapp"
+var inboundTopicFloors = "smartlight/floors"
+var inboundTopicWeb = "smartlight/web/webapp"
 
 // Define MQTT topic string for outbound commands to lights
 var outboundTopic = "smartlight/floors/floor_"
@@ -29,14 +29,14 @@ client.on('connect', () =>
 // Code to fire for 'message' event
 client.on('message', (topic, payload) =>
 {
-	// Print message was received
-	console.log("Processing message from: " + topic);
-	
 	// Get topic chain
 	var topicChain = topic.split('/');
 
 	// Extract payload from JSON format
 	var msg = JSON.parse(payload);
+
+	// Print message was received
+	console.log(`[INFO]: processing ${msg.type} message from floor_${msg.floorId} | apartment_${msg.apartmentId}`);
 
 	// Check if origin of message was from a floor server
 	if (topicChain.at(-1) == 'floors')
@@ -63,6 +63,9 @@ client.on('message', (topic, payload) =>
 // ############################################################
 function HandleSensorMessage(msg)
 {
+	console.log("sensor lux: " + msg.lux);
+	console.log("sensor motion: " + msg.motion);
+
 	// Store sensor data in Mongoose DB
 	StoreSensorData(msg);
 
@@ -76,11 +79,11 @@ function HandleSensorMessage(msg)
 		var lightDirection;
 		if (msg.lightStatus == "on")
 		{
-			lightStatus == "off";
+			lightDirection = "off";
 		}
 		else if (msg.lightStatus == "off")
 		{
-			lightStatus == "on";
+			lightDirection ="on";
 		}
 		ActivateLight(msg, lightDirection);
 	}
@@ -93,7 +96,7 @@ function CheckSensorReading(msg)
 	if (msg.lightStatus == "off")
 	{
 		// Check the lux level (less than 200 needs light)
-		if (msg.luxLow <= 200)
+		if (msg.lux <= 200)
 		{
 			// If motion detected coming in, return true
 			if (msg.motion == 'in')
@@ -123,14 +126,14 @@ function ActivateLight(msg, lightDirection)
 			type: "request",
 			floorId: msg.floorId,
 			apartmentId: msg.apartmentId,
-			lightId: lightId,
+			lightId: msg.sensorId,
 			time: now,
 			direction: lightDirection 
 		};
 
 	StoreRequestData(newMsg, "sensor_req");
 
-	PublishToTopic(outboundTopic + msg.floorId + "/rooms", newMsg);
+	PublishToTopic(outboundTopic + msg.floorId + "/apartments", newMsg);
 }
 
 
@@ -139,11 +142,16 @@ function ActivateLight(msg, lightDirection)
 // ############################################################
 function HandleSwitchMessage(msg)
 {
+	console.log("switch direction: " + msg.direction);
+
 	// Store request data in Mongoose DB
 	StoreRequestData(msg, "switch_req");
 
+	// Use existing details but swap type from switch to request
+	msg.type = "request";
+
 	// Send message to floor node to activate light in apartment
-	PublishToTopic(outboundTopic + msg.floorId + "/rooms", msg);
+	PublishToTopic(outboundTopic + msg.floorId + "/apartments", msg);
 }
 
 
@@ -152,18 +160,22 @@ function HandleSwitchMessage(msg)
 // ############################################################
 function HandleWebMessage(msg)
 {
+	console.log("web direction: " + msg.direction);
+
 	// Store request data in Mongoose DB
 	StoreRequestData(msg, "webapp_req");
 
+	// Use existing details but swap type from switch to request
+	msg.type = "request";
+
 	// Send message to floor node to activate light in apartment
-	PublishToTopic(outboundTopic + msg.floorId + "/rooms", msg);
+	PublishToTopic(outboundTopic + msg.floorId + "/apartments", msg);
 }
 
 
 // ############################################################
 // # Generic functions
 // ############################################################
-
 function PublishToTopic(outboundTopic, msg)
 {
 	// Publish message to the floor for fog level processing
@@ -184,10 +196,10 @@ function StoreSensorData(msg)
 
 	sensor.save().then(doc => 
 		{
-			console.log(doc);
+			//console.log(doc);
 		}).then(() =>
 		{
-			mongoose.connection.close()
+			//mongoose.connection.close()
 		})
 }
 
@@ -206,10 +218,10 @@ function StoreRequestData(msg, type)
 
 	request.save().then(doc => 
 		{
-			console.log(doc);
+			//console.log(doc);
 		}).then(() =>
 		{
-			mongoose.connection.close()
+			//mongoose.connection.close()
 		})
 
 }
