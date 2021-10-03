@@ -1,0 +1,15 @@
+{
+  "name": "smartlight-webapp",
+  "version": "1.0.0",
+  "description": "Web app for switch requests sent through the web",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "211333197",
+  "license": "ISC",
+  "dependencies": {
+    "mqtt": "^4.0.1"
+  }
+}

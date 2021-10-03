@@ -14,7 +14,7 @@ var inboundTopic = "smartlight/web"
 client.on('connect', () =>
 {
 	client.subscribe(inboundTopic);
-	console.log('mqtt connected');
+	console.log('web server connected to mqtt');
 });
 
 // Send messages at random intervals to random lights on floors
@@ -34,49 +34,7 @@ client.on('message', (topic, payload) =>
 function HandleWebMessage(msg)
 {
 	// Forward message on to processing node
-	PublishToProcessing(msg);
-}
-
-// ############################################################
-// # Looping function
-// ############################################################
-function Loop()
-{
-	// Generate random interval time
-	var rand = Math.round(Math.random() * (3000 - 500)) + 500;
-
-	setTimeout(function()
-	{
-		// Simulate new request sent to processing server
-		SimulateNewRequest();
-
-		// Loop again with another random time
-		Loop();
-	}, rand)
-}
-
-
-// ############################################################
-// # Web-app message simulator
-// ############################################################
-function SimulateNewRequest()
-{
-	// Generate random values for floor, apartment, and light (capped at 3 for testing purposes)
-	
-
-	// Determine which direction to switch light
-	var lightDirection;
-	if (msg.lightStatus == 'on')
-	{
-		lightDirection = 'off';
-	}
-	else
-	{
-		lightDirection = 'on';
-	}
-
-	// Send message to floor node to activate light in apartment
-	ActivateLight(msg.apartmentId, msg.lightId, lightDirection);
+	PublishToProcessing(outboundTopic, msg);
 }
 
 

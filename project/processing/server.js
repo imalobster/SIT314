@@ -155,8 +155,6 @@ function HandleSwitchMessage(msg)
 // ############################################################
 function HandleWebMessage(msg)
 {
-	console.log("web direction: " + msg.direction);
-
 	// Store request data in Mongoose DB
 	StoreRequestData(msg, "webapp_req");
 

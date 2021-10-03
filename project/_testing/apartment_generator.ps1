@@ -1,5 +1,5 @@
 # Pull in JSON config file
-$config = Get-Content -Raw -Path "..\_testing\room_config.json" | ConvertFrom-Json
+$config = Get-Content -Raw -Path "..\_testing\simulation_config.json" | ConvertFrom-Json
 
 # Loop through each floor and create new apartment nodes silently using pm2
 foreach ($floor in $config.floors)

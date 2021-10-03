@@ -90,7 +90,7 @@ function PublishToTopic($topic, $payload)
 }
 
 # Pull in JSON config file
-$config = Get-Content -Raw -Path "..\_testing\room_config.json" | ConvertFrom-Json
+$config = Get-Content -Raw -Path "..\_testing\simulation_config.json" | ConvertFrom-Json
 
 # Loop until stopped by user
 while ($true)
