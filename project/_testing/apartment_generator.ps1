@@ -14,3 +14,6 @@ foreach ($floor in $config.floors)
 		cmd.exe /c "pm2 start ..\apartment\server.js --name $serverNo -- "  $floor.floorId $apartment.apartmentId
 	}
 }
+
+# Load a separate instance for the web server
+cmd.exe /c "pm2 start ..\web_server\server.js --name webapp"
