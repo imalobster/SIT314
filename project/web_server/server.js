@@ -33,6 +33,12 @@ client.on('message', (topic, payload) =>
 
 function HandleWebMessage(msg)
 {
+	// Get time of request
+	var now = new Date();
+
+	// Add timestamp
+	msg["time"] = now;
+
 	// Forward message on to processing node
 	PublishToProcessing(outboundTopic, msg);
 }
