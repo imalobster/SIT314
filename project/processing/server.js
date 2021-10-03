@@ -183,7 +183,8 @@ function StoreSensorData(msg)
 			apartmentId: msg.apartmentId,
 			sensorId: msg.sensorId,
 			time: msg.time,
-			lux: msg.value
+			motion: msg.direction,
+			lux: msg.lux
 		}
 	)
 
