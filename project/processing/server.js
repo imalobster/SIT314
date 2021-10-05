@@ -5,7 +5,7 @@ const Sensor = require('./models/sensor');
 const Request = require('./models/request');
 
 // Establish connection to mongoose
-mongoose.connect('mongodb+srv://bastone:bigpassword%211@smartlightdb.ak3dv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
+mongoose.connect('mongodb+srv://[REDACTED]@smartlightdb.ak3dv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
 
 // Establish connection with the broker
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883");
