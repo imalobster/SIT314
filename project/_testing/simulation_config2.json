@@ -112,6 +112,78 @@
 							"sensorType": "motion"
 						}
 					]
+				},
+				{
+					"apartmentId": 3,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "motion"
+						},
+						{
+							"sensorId": 1,
+							"sensorType": "motion"
+						},
+						{
+							"sensorId": 2,
+							"sensorType": "motion"
+						}
+					]
+				},
+				{
+					"apartmentId": 4,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					],
+					"sensors":
+					[
+						{
+							"sensorId": 0,
+							"sensorType": "motion"
+						},
+						{
+							"sensorId": 1,
+							"sensorType": "motion"
+						},
+						{
+							"sensorId": 2,
+							"sensorType": "motion"
+						}
+					]
 				}
 			]
 		},

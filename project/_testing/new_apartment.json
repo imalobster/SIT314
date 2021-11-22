@@ -1,0 +1,32 @@
+{
+	"floors":
+	[
+		{
+			"floorId": 0,
+			"apartments":
+			[
+				{
+					"apartmentId": 3,
+					"lights":
+					[
+						{
+							"lightId": 0,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 1,
+							"lightStatus": "off",
+							"lightType": "standardLED"
+						},
+						{
+							"lightId": 2,
+							"lightStatus": "off",
+							"lightType": "smallLED"
+						}
+					]
+				}
+			]
+		}
+	]
+}

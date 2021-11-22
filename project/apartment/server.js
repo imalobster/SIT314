@@ -9,7 +9,7 @@
 // Instead, pull from local testing file and use passed in apartment and floor ID
 var args = process.argv.slice(2);
 var floorId = "floor_" + args[0];
-var config = require('../_testing/simulation_config.json');
+var config = require('../_testing/simulation_config2.json');
 apartmentConfig = config.floors[args[0]].apartments[args[1]];
 
 // Define apartment from ID in config object
